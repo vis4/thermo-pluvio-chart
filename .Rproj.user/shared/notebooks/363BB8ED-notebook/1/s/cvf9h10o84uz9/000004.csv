@@ -1,7 +1,0 @@
-"0","out %>% "
-"0","  filter(year==2019 & !(time %in% c('Year','Spring','Summer','Winter','Autumn'))) %>% "
-"0","  write_csv('temp-precip-anomalies-2019.csv')"
-"0",""
-"0","out %>% "
-"0","  filter(year==2020 & !(time %in% c('Year','Spring','Summer','Winter','Autumn'))) %>% "
-"0","  write_csv('temp-precip-anomalies-2020.csv')"

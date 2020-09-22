@@ -1,8 +1,0 @@
-"0","out <- temp %>% "
-"0","  left_join(temp.base) %>% "
-"0","  bind_rows(left_join(precip, precip.base)) %>%            "
-"0","  mutate(anomaly=ifelse(measure=='temperature',"
-"0","                        value-base,             # difference anomaly for temp."
-"0","                        (value-base)/base*100)) %>%  # pct. anomaly for rain "
-"0","  select(year, time, measure, anomaly) %>% "
-"0","  pivot_wider(names_from=measure, values_from=anomaly)"

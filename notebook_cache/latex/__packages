@@ -1,0 +1,13 @@
+base
+needs
+tidyverse
+ggplot2
+tibble
+tidyr
+readr
+purrr
+dplyr
+stringr
+forcats
+directlabels
+ggrepel
