@@ -1,0 +1,249 @@
+---
+title: "Weekly chart data analysis"
+author: "Gregor Aisch"
+date: "9/22/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Load some useful packages using `needs`
+
+```{r}
+needs(tidyverse, directlabels, clipr, ggrepel)
+```
+
+Let's load yearly, seasonal and monthly averages for air temperature
+
+```{r temp, message=FALSE, warning=FALSE, cache=TRUE}
+temp <- read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/annual/air_temperature_mean/regional_averages_tm_year.txt',
+                   delim=';', skip = 1) %>% 
+  transmute(year=Jahr, time='Year', value=as.numeric(Deutschland)) %>% 
+  bind_rows(
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/seasonal/air_temperature_mean/regional_averages_tm_autumn.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='Autumn', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/seasonal/air_temperature_mean/regional_averages_tm_spring.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='Spring', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/seasonal/air_temperature_mean/regional_averages_tm_summer.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='Summer', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/seasonal/air_temperature_mean/regional_averages_tm_winter.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='Winter', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_01.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='January', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_02.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='February', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_03.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='March', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_04.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='April', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_05.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='May', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_06.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='June', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_07.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='July', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_08.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='August', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_09.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='September', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_10.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='October', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_11.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='November', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_12.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='December', value=as.numeric(Deutschland))
+  ) %>% 
+  mutate(measure='temperature')
+```
+
+Load yearly, seasonal and monthly averages for precipitation
+ 
+```{r precip, message=FALSE, warning=FALSE, cache=TRUE}
+precip <- read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/annual/precipitation/regional_averages_rr_year.txt',
+                     delim=';', skip = 1) %>% 
+  transmute(year=Jahr, time='Year', value=as.numeric(Deutschland)) %>% 
+  bind_rows(
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/seasonal/precipitation/regional_averages_rr_autumn.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='Autumn', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/seasonal/precipitation/regional_averages_rr_spring.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='Spring', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/seasonal/precipitation/regional_averages_rr_summer.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='Summer', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/seasonal/precipitation/regional_averages_rr_winter.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='Winter', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_01.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='January', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_02.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='February', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_03.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='March', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_04.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='April', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_05.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='May', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_06.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='June', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_07.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='July', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_08.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='August', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_09.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='September', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_10.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='October', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_11.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='November', value=as.numeric(Deutschland)),
+    read_delim('https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_12.txt',
+               delim=';', skip = 1) %>% 
+      transmute(year=Jahr,time='December', value=as.numeric(Deutschland))
+  ) %>% 
+  mutate(measure='precipitation')
+```
+
+compute climate baseline (1961-1990)
+
+```{r}
+temp.base <- temp %>% 
+  filter(year>1960 & year <= 1990) %>% 
+  group_by(time) %>% 
+  summarise(base=mean(value))
+
+precip.base <- precip %>% 
+  filter(year>1960 & year <= 1990) %>% 
+  group_by(time) %>% 
+  summarise(base=mean(value))
+```
+
+Join temperature and precipitation data, add baseline, compute anomalies.
+
+```{r out, message=FALSE, cache=TRUE}
+out <- temp %>% 
+  left_join(temp.base) %>% 
+  bind_rows(left_join(precip, precip.base)) %>%            
+  mutate(anomaly=ifelse(measure=='temperature',
+                        value-base,             # difference anomaly for temp.
+                        (value-base)/base*100)) %>%  # pct. anomaly for rain 
+  select(year, time, measure, anomaly) %>% 
+  pivot_wider(names_from=measure, values_from=anomaly)
+```
+
+Save the 2019 & 2020 data for our first plot.
+
+```{r}
+out %>% 
+  filter(year==2019 & !(time %in% c('Year','Spring','Summer','Winter','Autumn'))) %>% 
+  write_csv('temp-precip-anomalies-2019.csv')
+
+out %>% 
+  filter(year==2020 & !(time %in% c('Year','Spring','Summer','Winter','Autumn'))) %>% 
+  write_csv('temp-precip-anomalies-2020.csv')
+```
+
+For the scatterplot custom line annotations we need to generate some markup:
+
+```{r}
+colors <- tribble(#####1976b3
+  ~time, ~color,
+  'Year', '#333333',
+  'Summer', '#308c00',
+  'June', '#308c00',
+  'July', '#308c00',
+  'August', '#308c00',
+  #~~~~~~~~~~~~~~~~~
+  'Winter', '#6ea2ff',
+  'December', '#6ea2ff',
+  'January', '#6ea2ff',
+  'February', '#6ea2ff',
+  #~~~~~~~~~~~~~~~~~
+  'Autumn', '#ac2125',
+  'September', '#ac2125',
+  'October', '#ac2125',
+  'November', '#ac2125',
+  #~~~~~~~~~~~~~~~~~
+  'Spring', '#fac10e',
+  'March', '#fac10e',
+  'April', '#fac10e',
+  'May', '#fac10e',
+)
+
+out %>% 
+  filter(year==2020) %>% 
+  filter(!(time %in% c('Year','Summer','Winter','Spring','Autumn'))) %>% 
+  left_join(colors) %>% 
+  transmute(x1=0,
+            y1=0,
+            x2=round(temperature,2),
+            y2=round(precipitation,2),
+            paste0('@color:',color),
+            '@width:2') %>% 
+  format_csv(col_names = F) %>% 
+  str_replace_all(',@', ' @') %>% 
+  write_clip()
+```
+
+### Time for some plotting
+
+Plot all seasons for years since 2010
+
+```{r seasons, echo=FALSE, fig.width=7, fig.height=7}
+out %>% 
+  filter(year>=2010) %>% 
+  filter(time %in% c('Summer','Winter','Spring','Autumn')) %>% 
+  ggplot(aes(xend=temperature, yend=precipitation,color=time)) +
+  geom_hline(yintercept=0)  +
+  geom_vline(xintercept=0)  +
+  geom_segment(x=0,y=0, arrow = arrow(length = unit(7, 'points'))) +
+  geom_text(aes(temperature, precipitation, label=year)) +
+  theme_minimal()
+```
+
+Let's look at where all the years since 1961 are in the plot (highlighting the most recent years):
+
+```{r all_years, echo=FALSE, fig.width=7, fig.height=7}
+out %>% 
+  filter(time=='Year' & year > 1960) %>% 
+  mutate(recent=year>=2010) %>% 
+  ggplot(aes(temperature, precipitation, label=year, color=recent)) +
+  geom_point() +
+  geom_text_repel() +
+  geom_hline(yintercept=0)  +
+  geom_vline(xintercept=0)  +
+  theme_minimal()
+```
+
+

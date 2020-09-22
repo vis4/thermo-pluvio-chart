@@ -1,0 +1,26 @@
+{
+    "id": "A64969F6",
+    "path": "~/projects/r-work/weekly-chart-rain/plot.R",
+    "project_path": "plot.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1600506363620.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "tempName": "Untitled1",
+        "cursorPosition": "92,16",
+        "scrollLine": "60",
+        "notebook_format": "html_document"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1600810755,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1600810755721,
+    "read_only": false,
+    "read_only_alternatives": []
+}
